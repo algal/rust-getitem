@@ -33,7 +33,6 @@ where
 {
     fn new(iter: I, slice: Slice, iterable_len: Option<usize>) -> Self {
         let need_len = slice.start.map_or(false, |x| x < 0) || slice.end.map_or(false, |x| x < 0);
-        let mut iter = iter;
 
         let (normalized_start, normalized_end, source) = if need_len && iterable_len.is_none() {
             // Buffer the entire iterator to determine its length
@@ -226,8 +225,7 @@ fn filtered_line(line: &str, slice: Slice) -> Option<String> {
 }
 
 #[derive(Debug)]
-struct SplitResult<'a> {
-    text: &'a str,
+struct SplitResult {
     start: usize,
     end: usize,
 }
@@ -235,7 +233,7 @@ struct SplitResult<'a> {
 fn split_with_positions<'a>(
     str_to_split: &'a str,
     pattern: &str,
-) -> Vec<SplitResult<'a>> {
+) -> Vec<SplitResult> {
     let regex = Regex::new(pattern).unwrap();
     let mut result = Vec::new();
     let mut last_end = 0;
@@ -244,7 +242,6 @@ fn split_with_positions<'a>(
         let start = capture.start();
         if start > last_end {
             result.push(SplitResult {
-                text: &str_to_split[last_end..start],
                 start: last_end,
                 end: start,
             });
@@ -254,7 +251,6 @@ fn split_with_positions<'a>(
 
     if last_end < str_to_split.len() {
         result.push(SplitResult {
-            text: &str_to_split[last_end..],
             start: last_end,
             end: str_to_split.len(),
         });
